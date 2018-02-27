@@ -265,6 +265,32 @@ RMStore delegates transaction persistence and provides two optional reference im
 
 For more info, check out the [wiki](https://github.com/robotmedia/RMStore/wiki/Transaction-persistence).
 
+## Accepting Store Payments (iOS 11+ only)
+iOS 11 added support for users to purchase in-app purchases through the App Store directly. RMStore supports this functionality by implementing the below `SKPaymentTransactionObserver` delegate method.
+
+```objective-c
+(BOOL)paymentQueue:(SKPaymentQueue *)queue shouldAddStorePayment:(SKPayment *)payment forProduct:(SKProduct *)product;
+```
+
+### RMStoreStorePaymentAcceptor
+RMStore uses `RMStoreStorePaymentAcceptor` to determine whether or not the store payment should be added to the payment queue (accepted). If you **don't** provide a `RMStoreStorePaymentAcceptor`, any store payment received by RMStore will **not** be added to the payment queue (accepted) and will be stored, allwoing it to be added to the payment queue later.
+
+If you provide your own `RMStoreStorePaymentAcceptor` and return `NO` from `acceptStorePayment:`, the store payment will also be stored by RMStore. If you return `YES`, the system will add the store payment to the payment queue.
+
+```objective-c
+@protocol RMStoreStorePaymentAcceptor
+
+- (BOOL)acceptStorePayment:(SKPayment*)payment fromQueue:(SKPaymentQueue*)queue forProduct:(SKProduct*)product;
+
+@end
+```
+
+### Accepting Stored Payments
+When your app is ready to add the stored store payments to the payment queue, use the `acceptStoredStorePayments` method on RMStore.
+
+```objective-c
+[[RMStore defaultStore] acceptStoredStorePayments];
+```
 
 ##Requirements
 

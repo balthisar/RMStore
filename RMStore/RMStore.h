@@ -24,6 +24,7 @@
 @protocol RMStoreContentDownloader;
 @protocol RMStoreReceiptVerifier;
 @protocol RMStoreTransactionPersistor;
+@protocol RMStoreStorePaymentAcceptor;
 @protocol RMStoreObserver;
 
 extern NSString *const RMStoreErrorDomain;
@@ -51,6 +52,10 @@ extern NSInteger const RMStoreErrorCodeUnableToCompleteVerification;
 /** Returns whether the user is allowed to make payments.
  */
 + (BOOL)canMakePayments;
+
+/** Accept store payments that were stored when the `storePaymentAcceptor` wasn't implemented or returned `NO`.
+ */
+- (void)acceptStoredStorePayments;
 
 /** Request payment of the product with the given product identifier.
  @param productIdentifier The identifier of the product whose payment will be requested.
@@ -132,7 +137,7 @@ extern NSInteger const RMStoreErrorCodeUnableToCompleteVerification;
  @param successBlock The block to be called if the refresh receipt request is sucessful. Can be `nil`.
  @param failureBlock The block to be called if the refresh receipt request fails. Can be `nil`.
  */
-- (void)refreshReceiptOnSuccess:(void (^)())successBlock
+- (void)refreshReceiptOnSuccess:(void (^)(void))successBlock
                         failure:(void (^)(NSError *error))failureBlock __attribute__((availability(ios,introduced=7.0)));
 
 ///---------------------------------------------
@@ -147,7 +152,6 @@ extern NSInteger const RMStoreErrorCodeUnableToCompleteVerification;
 
 /** The receipt verifier. You can provide your own or use one of the reference implementations provided by the library.
  @see RMStoreAppReceiptVerifier
- @see RMStoreTransactionReceiptVerifier
  */
 @property (nonatomic, weak) id<RMStoreReceiptVerifier> receiptVerifier;
 
@@ -158,6 +162,10 @@ extern NSInteger const RMStoreErrorCodeUnableToCompleteVerification;
  */
 @property (nonatomic, weak) id<RMStoreTransactionPersistor> transactionPersistor;
 
+/**
+ The store payment acceptor. Provide your own store payment acceptor to accept payments receieved from the App Store.
+*/
+@property (nonatomic, weak) id<RMStoreStorePaymentAcceptor> storePaymentAcceptor;
 
 #pragma mark Product management
 ///---------------------------------------------
@@ -197,7 +205,7 @@ extern NSInteger const RMStoreErrorCodeUnableToCompleteVerification;
  @discussion Hosted content from Apple’s server (@c SKDownload) is handled automatically by RMStore.
  */
 - (void)downloadContentForTransaction:(SKPaymentTransaction*)transaction
-                              success:(void (^)())successBlock
+                              success:(void (^)(void))successBlock
                              progress:(void (^)(float progress))progressBlock
                               failure:(void (^)(NSError *error))failureBlock;
 
@@ -217,8 +225,20 @@ extern NSInteger const RMStoreErrorCodeUnableToCompleteVerification;
  @param failureBlock Called if the transaction failed verification. If verification could not be completed (e.g., due to connection issues), then error must be of code RMStoreErrorCodeUnableToCompleteVerification to prevent RMStore to finish the transaction. Must be called in the main queu.
  */
 - (void)verifyTransaction:(SKPaymentTransaction*)transaction
-                  success:(void (^)())successBlock
+                  success:(void (^)(void))successBlock
                   failure:(void (^)(NSError *error))failureBlock;
+
+@end
+
+@protocol RMStoreStorePaymentAcceptor
+
+/**
+ Allows RMStore to accept a payment made through the App Store. If not ready to accept, return `NO` and RMStore will store the payment. Call `acceptStoredStorePayments` at a later time for RMStore to accept the stored payments.
+ @param payment Payment to accept or store.
+ @param queue Queue the payment request was made on.
+ @param product Product for the payment.
+ */
+- (BOOL)acceptStorePayment:(SKPayment*)payment fromQueue:(SKPaymentQueue*)queue forProduct:(SKProduct*)product;
 
 @end
 
@@ -252,6 +272,7 @@ extern NSInteger const RMStoreErrorCodeUnableToCompleteVerification;
  */
 - (void)storeDownloadUpdated:(NSNotification*)notification __attribute__((availability(ios,introduced=6.0)));
 
+- (void)storePaymentTransactionPurchasing:(NSNotification*)notification;
 - (void)storePaymentTransactionDeferred:(NSNotification*)notification __attribute__((availability(ios,introduced=8.0)));
 - (void)storePaymentTransactionFailed:(NSNotification*)notification;
 - (void)storePaymentTransactionFinished:(NSNotification*)notification;
@@ -261,7 +282,6 @@ extern NSInteger const RMStoreErrorCodeUnableToCompleteVerification;
 - (void)storeRefreshReceiptFinished:(NSNotification*)notification __attribute__((availability(ios,introduced=7.0)));
 - (void)storeRestoreTransactionsFailed:(NSNotification*)notification;
 - (void)storeRestoreTransactionsFinished:(NSNotification*)notification;
-
 @end
 
 /**

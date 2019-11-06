@@ -155,6 +155,10 @@
  */
 @property (nonatomic, strong, readonly) NSDate *cancellationDate;
 
+/** For an auto-renewable subscription, whether or not it is in the introductory price period.
+ */
+@property (nonatomic, readonly) BOOL subscriptionIntroductoryPricePeriod;
+
 /** The primary key for identifying subscription purchases.
  */
 @property (nonatomic, readonly) NSInteger webOrderLineItemID;

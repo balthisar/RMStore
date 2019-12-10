@@ -18,7 +18,7 @@
 }
 
 - (void)testInitWithASN1Data_invalid
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     NSData *data = [NSData data];
     _receipt = [[RMAppReceipt alloc] initWithASN1Data:data];
     XCTAssertNotNil(_receipt, @"");
@@ -33,7 +33,7 @@
 }
 
 - (void)testContainsInAppPurchaseOfProductIdentifier_NO
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     NSData *data = [NSData data];
     _receipt = [[RMAppReceipt alloc] initWithASN1Data:data];
     BOOL result = [_receipt containsInAppPurchaseOfProductIdentifier:@"test"];
@@ -41,7 +41,7 @@
 }
 
 - (void)testContainsActiveAutoRenewableSubscriptionOfProductIdentifierForDate_NO
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     NSData *data = [NSData data];
     _receipt = [[RMAppReceipt alloc] initWithASN1Data:data];
     BOOL result = [_receipt containsActiveAutoRenewableSubscriptionOfProductIdentifier:@"test" forDate:[NSDate date]];
@@ -49,20 +49,20 @@
 }
 
 - (void)testBundleReceipt_nil
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     RMAppReceipt *receipt = [RMAppReceipt bundleReceipt];
     XCTAssertNil(receipt, @"");
 }
 
 - (void)testVerifyReceiptHash_NO
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     _receipt = [[RMAppReceipt alloc] initWithASN1Data:[NSData data]];
     BOOL result = [_receipt verifyReceiptHash];
     XCTAssertFalse(result, @"");
 }
 
 - (void)testSetAppleRootCertificateURL
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     [RMAppReceipt setAppleRootCertificateURL:nil];
 }
 

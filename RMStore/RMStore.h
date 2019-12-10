@@ -25,6 +25,8 @@
 @protocol RMStoreReceiptVerifier;
 @protocol RMStoreTransactionPersistor;
 @protocol RMStoreObserver;
+@protocol RMStoreStorePaymentAcceptor;
+
 
 extern NSString *const RMStoreErrorDomain;
 extern NSInteger const RMStoreErrorCodeDownloadCanceled;
@@ -98,6 +100,20 @@ extern NSString *const RMStoreNotificationExtraUserInfo;
  */
 - (void)addPayment:(NSString*)productIdentifier
               user:(NSString*)userIdentifier
+           success:(void (^)(SKPaymentTransaction *transaction))successBlock
+           failure:(void (^)(SKPaymentTransaction *transaction, NSError *error))failureBlock;
+
+/** Request payment of the product with the given product identifier. `deferBlock` will be called if the payment is deferred, `successBlock` will be called if the payment is successful, `failureBlock` if it isn't. If the paiement is deffered, update your UI to not block the user, but the payment transaction remains in the queue and the block success / failure can still be called later.
+ @param productIdentifier The identifier of the product whose payment will be requested.
+ @param userIdentifier An opaque identifier of the user’s account, if applicable. Can be `nil`.
+ @param deferBlock The block to be called if the payment is deferred. Can be `nil`.
+ @param successBlock The block to be called if the payment is sucessful. Can be `nil`.
+ @param failureBlock The block to be called if the payment fails or there isn't any product with the given identifier. Can be `nil`.
+ @see [SKPayment applicationUsername]
+ */
+- (void)addPayment:(NSString*)productIdentifier
+              user:(NSString*)userIdentifier
+             defer:(void (^)(SKPaymentTransaction *transaction))deferBlock
            success:(void (^)(SKPaymentTransaction *transaction))successBlock
            failure:(void (^)(SKPaymentTransaction *transaction, NSError *error))failureBlock;
 

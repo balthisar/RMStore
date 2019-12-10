@@ -157,7 +157,7 @@
 }
 
 - (void)testAddPaymentUser
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     [_store addPayment:@"test" user:@"test" success:nil failure:nil];
 }
 
@@ -196,7 +196,7 @@
 }
 
 - (void)testRestoreTransactionsOfUser
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     
     [_store restoreTransactionsOfUser:@"test" onSuccess:nil failure:nil];
 }
@@ -204,7 +204,7 @@
 #pragma mark Receipt
 
 - (void)testReceiptURL
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     
     NSURL *result = [RMStore receiptURL];
     NSURL *expected = [NSBundle mainBundle].appStoreReceiptURL;
@@ -212,17 +212,17 @@
 }
 
 - (void)testRefreshReceipt
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     [_store refreshReceipt];
 }
 
 - (void)testRefreshReceipt_Nil_Nil
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     [_store refreshReceiptOnSuccess:nil failure:nil];
 }
 
 - (void)testRefreshReceipt_Block_Block
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     [_store refreshReceiptOnSuccess:^{} failure:^(NSError *error) {}];
 }
 
@@ -267,13 +267,13 @@
 #pragma mark SKPaymentTransactionObserver
 
 - (void)testPaymentQueueUpdatedDownloads_Empty
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id queue = [OCMockObject mockForClass:[SKPaymentQueue class]];
     [_store paymentQueue:queue updatedDownloads:@[]];
 }
 
 - (void)testPaymentQueueUpdatedDownloads_Active
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStateActive];
     const float progress = 0.5f;
     [(SKDownload *)[[download stub] andReturnValue:OCMOCK_VALUE(progress)] progress];
@@ -302,7 +302,7 @@
 }
 
 - (void)testPaymentQueueUpdatedDownloads_Canceled__PurchasedTransaction_SingleDownload
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStateCancelled];
     
     id transaction = [self mockPaymentTransactionWithState:SKPaymentTransactionStatePurchased downloads:@[download]];
@@ -332,7 +332,7 @@
 }
 
 - (void)testPaymentQueueUpdatedDownloads_Canceled__PurchasedTransaction_MultipleFinishedDownloads
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStateCancelled];
     id anotherDownload = [self mockDownloadWithState:SKDownloadStateFinished];
     
@@ -363,7 +363,7 @@
 }
 
 - (void)testPaymentQueueUpdatedDownloads_Canceled__PurchasedTransaction_PendingDownloads
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStateCancelled];
     id anotherDownload = [self mockDownloadWithState:SKDownloadStateWaiting];
     
@@ -381,7 +381,7 @@
 }
 
 - (void)testPaymentQueueUpdatedDownloads_Failed__PurchasedTransaction_SingleDownload
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStateFailed];
     NSError *error = [NSError errorWithDomain:@"test" code:0 userInfo:nil];
     [[[download stub] andReturn:error] error];
@@ -402,7 +402,7 @@
 }
 
 - (void)testPaymentQueueUpdatedDownloads_Failed__PurchasedTransaction_MutipleFinishedDownload
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStateFailed];
     NSError *error = [NSError errorWithDomain:@"test" code:0 userInfo:nil];
     [[[download stub] andReturn:error] error];
@@ -425,7 +425,7 @@
 }
 
 - (void)testPaymentQueueUpdatedDownloads_Failed__PurchasedTransaction_PendingDownloads
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStateFailed];
     NSError *error = [NSError errorWithDomain:@"test" code:0 userInfo:nil];
     [[[download stub] andReturn:error] error];
@@ -446,7 +446,7 @@
 }
 
 - (void)testPaymentQueueUpdatedDownloads_Finished__PurchasedTransaction_SingleDownload
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStateFinished];
     
     id transaction = [self mockPaymentTransactionWithState:SKPaymentTransactionStatePurchased downloads:@[download]];
@@ -465,7 +465,7 @@
 }
 
 - (void)testPaymentQueueUpdatedDownloads_Finished__RestoredTransaction_SingleDownload
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStateFinished];
     
     id transaction = [self mockPaymentTransactionWithState:SKPaymentTransactionStateRestored downloads:@[download]];
@@ -488,7 +488,7 @@
 }
 
 - (void)testPaymentQueueUpdatedDownloads_Finished__RestoredTransaction_SingleDownload_RestoreCompletedTransactionsFinished
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStateFinished];
     
     id transaction = [self mockPaymentTransactionWithState:SKPaymentTransactionStateRestored downloads:@[download]];
@@ -514,7 +514,7 @@
 
 
 - (void)testPaymentQueueUpdatedDownloads_Finished__PurchasedTransaction_MultipleFinishedDownloads
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStateFinished];
     id anotherDownload = [self mockDownloadWithState:SKDownloadStateFinished];
     
@@ -534,7 +534,7 @@
 }
 
 - (void)testPaymentQueueUpdatedDownloads_Finished__PurchasedTransaction_PendingDownloads
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStateFinished];
     id anotherDownload = [self mockDownloadWithState:SKDownloadStateWaiting];
     
@@ -552,7 +552,7 @@
 }
 
 - (void)testPaymentQueueUpdatedDownloads_Paused
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStatePaused];
     
     id transaction = [self mockPaymentTransactionWithState:SKPaymentTransactionStatePurchased downloads:@[download]];
@@ -577,7 +577,7 @@
 }
 
 - (void)testPaymentQueueUpdatedDownloads_Waiting
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_5_1)
+{
     id download = [self mockDownloadWithState:SKDownloadStateWaiting];
     [self mockPaymentTransactionWithState:SKPaymentTransactionStatePurchased downloads:@[download]];
     
@@ -693,7 +693,7 @@
     [[[product stub] andReturn:@"test"] productIdentifier];
     (_store.products)[@"test"] = product;
     [_store addPayment:@"test" success:^(SKPaymentTransaction *transaction) {
-       XCTAssertEqualObjects(transaction, originalTransaction, @"");
+        XCTAssertEqualObjects(transaction, originalTransaction, @"");
     } failure:^(SKPaymentTransaction *transaction, NSError *error) {
         XCTFail(@"");
     }];
@@ -938,7 +938,7 @@
 }
 
 - (void)testPaymentQueueUpdatedTransactions_Deferred
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_7_1)
+{
     id queue = [OCMockObject mockForClass:[SKPaymentQueue class]];
     id transaction = [self mockPaymentTransactionWithState:SKPaymentTransactionStateDeferred];
     [[_observer expect] storePaymentTransactionDeferred:[OCMArg checkWithBlock:^BOOL(NSNotification *notification) {
@@ -969,6 +969,7 @@
 
 - (void)testPaymentQueueRestoreCompletedTransactionsFinished_Queue__Blocks
 {
+    XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"testPaymentQueueRestoreCompletedTransactionsFinished_Queue__Blocks"];
     [[_observer expect] storeRestoreTransactionsFinished:[OCMArg checkWithBlock:^BOOL(NSNotification *notification) {
         XCTAssertEqualObjects(notification.rm_transactions, @[]);
         return YES;
@@ -979,14 +980,18 @@
     [_store restoreTransactionsOnSuccess:^(NSArray* transactions) {
         didSucceed = YES;
         XCTAssertEqualObjects(transactions, @[], @"");
+        [expectation fulfill];
     } failure:^(NSError *error) {
         XCTFail(@"");
+        [expectation fulfill];
     }];
     
     [_store paymentQueueRestoreCompletedTransactionsFinished:queue];
     
     [_observer verify];
     XCTAssertTrue(didSucceed, @"");
+    
+    [self waitForExpectations:@[expectation] timeout:2.0];
 }
 
 - (void)testPaymentQueueRestoreCompletedTransactionsFinished_Queue__TwoTransactions_storeRestoreTransactionsFinished
@@ -1080,7 +1085,7 @@
 #pragma mark SKRequestDelegate
 
 - (void)testRequestDidFinish_noBlocks
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     [[_observer expect] storeRefreshReceiptFinished:[OCMArg isNotNil]];
     [_store addStoreObserver:_observer];
     
@@ -1092,7 +1097,7 @@
 }
 
 - (void)testRequestDidFailWithError_noBlocks
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     NSError *originalError = [NSError errorWithDomain:@"test" code:0 userInfo:nil];
     [[_observer expect] storeRefreshReceiptFailed:[OCMArg checkWithBlock:^BOOL(NSNotification *notification) {
         XCTAssertEqualObjects(notification.rm_storeError, originalError, @"");
@@ -1109,14 +1114,17 @@
 }
 
 - (void)testRequestDidFinish_withBlocks
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     [[_observer expect] storeRefreshReceiptFinished:[OCMArg isNotNil]];
     [_store addStoreObserver:_observer];
-    __block BOOL executed = NO;
+    __block enum { bYes, bNo, bError } executed = bNo;
     [_store refreshReceiptOnSuccess:^{
-        executed = YES;
+        executed = bYes;
     } failure:^(NSError *error) {
-        XCTFail(@"");
+        // AppKit seems to make a real request that gets called back
+        // after we've run our mock, and it will be an error, so let's
+        // set a status for troubleshooting, but otherwise ignore it.
+        executed = bError;
     }];
 
     id store = _store;
@@ -1124,11 +1132,11 @@
     [store requestDidFinish:requestMock];
     
     [_observer verify];
-    XCTAssertTrue(executed, @"");
+    XCTAssertEqual(executed, bYes, @"");
 }
 
 - (void)testRequestDidFailWithError_withBlocks
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     NSError *originalError = [NSError errorWithDomain:@"test" code:0 userInfo:nil];
     [[_observer expect] storeRefreshReceiptFailed:[OCMArg checkWithBlock:^BOOL(NSNotification *notification) {
         XCTAssertEqualObjects(notification.rm_storeError, originalError, @"");
@@ -1248,7 +1256,7 @@
 {
     id download = [OCMockObject mockForClass:[SKDownload class]];
     [[[download stub] andReturn:@"content"] contentIdentifier];
-    [[[download stub] andReturnValue:@(state)] downloadState];
+    [[[download stub] andReturnValue:@(state)] state];
     return download;
 }
 
@@ -1271,9 +1279,10 @@
     [[[transaction stub] andReturnValue:@(state)] transactionState];
     [[[transaction stub] andReturn:[NSDate date]] transactionDate];
     [[[transaction stub] andReturn:@"transaction"] transactionIdentifier];
-    [[[transaction stub] andReturn:[NSData data]] transactionReceipt];
+//    [[[transaction stub] andReturn:[NSData data]] transactionReceipt];
     id payment = [OCMockObject mockForClass:[SKPayment class]];
-    [[[payment stub] andReturn:self.name] productIdentifier];
+//    [[[payment stub] andReturn:self.name] productIdentifier];
+    [[[payment stub] andReturn:@"test"] productIdentifier];
     [[[transaction stub] andReturn:payment] payment];
     [[[transaction stub] andReturn:downloads] downloads];
     for (id download in downloads)

@@ -1,8 +1,8 @@
 Pod::Spec.new do |s|
   s.name = 'RMStore'
-  s.version = '0.8.0'
+  s.version = '0.9.0'
   s.license = 'Apache 2.0'
-  s.summary = 'Fork because the original version is not maintained anymore. A lightweight iOS library for In-App Purchases that adds blocks and notifications to StoreKit, plus verification, persistence and downloads.'
+  s.summary = 'A lightweight iOS library for In-App Purchases that adds blocks and notifications to StoreKit, plus verification, persistence and downloads.'
   s.homepage = 'https://github.com/robotmedia/RMStore'
   s.author = 'Hermes Pique'
   s.social_media_url = 'https://twitter.com/hpique'
@@ -11,8 +11,8 @@ Pod::Spec.new do |s|
   s.requires_arc = true
   s.default_subspec = 'Core'
   
-  s.ios.deployment_target = '7.0'
-  s.osx.deployment_target = '10.7'
+  s.ios.deployment_target = '9.0'
+  s.osx.deployment_target = '10.12'
 
   s.subspec 'Core' do |core|
     core.source_files = 'RMStore/*.{h,m}'

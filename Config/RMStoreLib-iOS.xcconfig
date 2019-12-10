@@ -1,0 +1,20 @@
+//
+// RMStoreLib-iOS.xcconfig
+//
+// Base Release Configuration.
+//
+//
+//
+//
+//
+
+//*****************************************************************************
+// Base Settings
+//*****************************************************************************
+
+PRODUCT_NAME                = RMStore
+SDKROOT                     = iphoneos
+
+// Statically-bind openssl into our library.
+GENERATE_MASTER_OBJECT_FILE = YES
+PRELINK_LIBS                = $(BUILT_PRODUCTS_DIR)/openssl.framework/openssl

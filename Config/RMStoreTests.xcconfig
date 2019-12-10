@@ -1,0 +1,30 @@
+//
+// RMStoreTests.xcconfig
+//
+// Base Release Configuration.
+//
+//
+//
+//
+//
+
+//*****************************************************************************
+// Base Settings
+//*****************************************************************************
+
+PRODUCT_NAME                 = $(TARGET_NAME)
+PRODUCT_BUNDLE_IDENTIFIER    = com.balthisar.${PRODUCT_NAME:rfc1034identifier}
+INFOPLIST_FILE               = RMStoreTests/RMStoreTests-Info.plist
+WRAPPER_EXTENSION            = xctest
+
+GCC_PRECOMPILE_PREFIX_HEADER = YES
+GCC_PREFIX_HEADER            = RMStoreTests/RMStoreTests-Prefix.pch
+
+OTHER_LDFLAGS                = -ObjC
+
+
+// We have to bring in a library used for unit testing.
+HEADER_SEARCH_PATHS          = "${SRCROOT}/${TARGET_NAME}/usr/include/**"
+LIBRARY_SEARCH_PATHS         = $(inherited) "$(SRCROOT)/RMStoreTests/usr/lib"
+
+TEST_HOST                    = $(BUILT_PRODUCTS_DIR)/RMStoreTestsHost.app/RMStoreTestsHost

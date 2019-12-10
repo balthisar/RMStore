@@ -1,0 +1,24 @@
+//
+// RMStoreTests.xcconfig
+//
+// Base Release Configuration.
+//
+//
+//
+//
+//
+
+//*****************************************************************************
+// Base Settings
+//*****************************************************************************
+
+PRODUCT_NAME = $(TARGET_NAME)
+PRODUCT_BUNDLE_IDENTIFIER = com.balthisar.RMStoreTestsMacOS
+SDKROOT = macosx
+INFOPLIST_FILE = RMStoreTests/RMStoreTestMacOS-Info.plist
+DEVELOPMENT_TEAM = 9PN2JXXG7Y
+OTHER_LDFLAGS = -ObjC
+
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/../Frameworks @loader_path/../Frameworks
+HEADER_SEARCH_PATHS = "$(SRCROOT)/RMStoreTests/usr/include/**
+LIBRARY_SEARCH_PATHS = "$(SRCROOT)/RMStoreTests/usr/lib"

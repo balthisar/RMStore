@@ -1,15 +1,17 @@
 # Contributing
 
-Contributing to RMStore is welcomed and encouraged. 
-
-If you would like to contribute but don't know where to start, check out the issues with the [easy](https://github.com/robotmedia/RMStore/issues?labels=easy&state=open) tag.
+Contributing to RMStore is welcomed and encouraged. The original repository
+is no longer maintained and the original author is unreachable, so I'm willing
+to assume maintenance if desired.
 
 ## Issues  
 
-GitHub issues are used to track bugs and enhancements. Please ensure that your description is
-clear and has sufficient instructions to be able to reproduce the issue.
+GitHub issues are used to track bugs and enhancements. Please ensure that your 
+description is clear and has sufficient instructions to be able to reproduce
+the issue.
 
-Please post usage questions in Stack Overflow using the [RMStore](http://stackoverflow.com/questions/tagged/rmstore) tag.
+Please post usage questions in Stack Overflow using the 
+[RMStore](http://stackoverflow.com/questions/tagged/rmstore) tag.
 
 ## Pull Requests
 

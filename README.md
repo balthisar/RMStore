@@ -1,12 +1,10 @@
-#RMStore
+# RMStore
 
-[![CocoaPods Version](https://cocoapod-badges.herokuapp.com/v/RMStore/badge.png)](http://cocoadocs.org/docsets/RMStore) [![Platform](https://cocoapod-badges.herokuapp.com/p/RMStore/badge.png)](http://cocoadocs.org/docsets/RMStore)
-[![Build Status](https://travis-ci.org/robotmedia/RMStore.png)](https://travis-ci.org/robotmedia/RMStore)
-[![Join the chat at https://gitter.im/robotmedia/RMStore](https://badges.gitter.im/robotmedia/RMStore.svg)](https://gitter.im/robotmedia/RMStore?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+A lightweight iOS and macOS library for In-App Purchases.
 
-A lightweight iOS library for In-App Purchases.
-
-RMStore adds [blocks](#storekit-with-blocks) and [notifications](#notifications) to StoreKit, plus [receipt verification](#receipt-verification), [content downloads](#downloading-content) and [transaction persistence](#transaction-persistence). All in one class without external dependencies. Purchasing a product is as simple as:
+RMStore adds blocks and notifications to StoreKit, plus receipt verification,
+content downloads, and transaction persistence]. All in one class without 
+external dependencies. Purchasing a product is as simple as:
 
 ```objective-c
 [[RMStore defaultStore] addPayment:productID success:^(SKPaymentTransaction *transaction) {
@@ -16,23 +14,56 @@ RMStore adds [blocks](#storekit-with-blocks) and [notifications](#notifications)
 }];
 ```
 
-##Installation
+## Important Maintenance Note
 
-Using [CocoaPods](http://cocoapods.org/):
+The original repository by Hermes Pique ("Robot Media") is no longer being
+maintained. I'm not a CocoaPods user, and so the the CocoaPods instructions
+probably won't work for you. If you'd like to contribute a fix, I'll be happy
+to accept a PR.
+
+The intent of this fork is to:
+
+- Add/fix support macOS.
+- Add/fix support for macOS Catalyst.
+- Integrate many of the fixes and improvements made by the community.
+- Provide an XCFramework.
+
+I've applied some fixes and improvements from the fork network and the original
+repository PR list. Because many of these have changed the API, these readme
+instructions may be out of date. As always, though, headers are canon.
+
+
+## Installation
+
+Using [CocoaPods](http://cocoapods.org/), which probably doesn't work with
+this fork:
 
 ```ruby
-pod 'RMStore', '~> 0.7'
+pod 'RMStore', '~> 0.9'
 ```
 
-Or add the files from the [RMStore](https://github.com/robotmedia/RMStore/tree/master/RMStore) directory if you're doing it manually.
+Carthage works. Add the following to your Cartfile:
 
-Check out the [wiki](https://github.com/robotmedia/RMStore/wiki/Installation) for more options.
+```ruby
+github "balthisar/RMStore" "branch-of-your-choice"
+```
 
-##StoreKit with blocks
+Note that during the cleanup process for this repo, the master branch probably
+reflects the original repository. I'd choose a different branch if you're
+trying to use my fork.
+
+Of course, you can install manually, too.
+
+Have a look at the sample projects in the Xcode project for file locations,
+etc.
+
+
+## StoreKit with blocks
 
 RMStore adds blocks to all asynchronous StoreKit operations.
 
-###Requesting products
+
+### Requesting products
 
 ```objective-c
 NSSet *products = [NSSet setWithArray:@[@"fabulousIdol", @"rootBeer", @"rubberChicken"]];
@@ -43,7 +74,7 @@ NSSet *products = [NSSet setWithArray:@[@"fabulousIdol", @"rootBeer", @"rubberCh
 }];
 ```
 
-###Add payment
+### Add payment
 
 ```objective-c
 [[RMStore defaultStore] addPayment:@"waxLips" success:^(SKPaymentTransaction *transaction) {
@@ -53,7 +84,7 @@ NSSet *products = [NSSet setWithArray:@[@"fabulousIdol", @"rootBeer", @"rubberCh
 }];
 ```
 
-###Restore transactions
+### Restore transactions
 
 ```objective-c
 [[RMStore defaultStore] restoreTransactionsOnSuccess:^(NSArray *transactions){
@@ -63,7 +94,7 @@ NSSet *products = [NSSet setWithArray:@[@"fabulousIdol", @"rootBeer", @"rubberCh
 }];
 ```
 
-###Refresh receipt (iOS 7+ only)
+### Refresh receipt
 
 ```objective-c
 [[RMStore defaultStore] refreshReceiptOnSuccess:^{
@@ -73,11 +104,15 @@ NSSet *products = [NSSet setWithArray:@[@"fabulousIdol", @"rootBeer", @"rubberCh
 }];
 ```
 
-##Notifications
+## Notifications
 
-RMStore sends notifications of StoreKit related events and extends `NSNotification` to provide relevant information. To receive them, implement the desired methods of the `RMStoreObserver` protocol and add the observer to `RMStore`.
+RMStore sends notifications of StoreKit related events and extends
+`NSNotification` to provide relevant information. To receive them, implement
+the desired methods of the `RMStoreObserver` protocol and add the observer
+to `RMStore`.
 
-###Adding and removing the observer
+
+### Adding and removing the observer
 
 ```objective-c
 [[RMStore defaultStore] addStoreObserver:self];
@@ -85,7 +120,7 @@ RMStore sends notifications of StoreKit related events and extends `NSNotificati
 [[RMStore defaultStore] removeStoreObserver:self];
 ```
 
-###Products request notifications
+### Products request notifications
 
 ```objective-c
 - (void)storeProductsRequestFailed:(NSNotification*)notification
@@ -100,9 +135,10 @@ RMStore sends notifications of StoreKit related events and extends `NSNotificati
 }
 ```
 
-###Payment transaction notifications
+### Payment transaction notifications
 
-Payment transaction notifications are sent after a payment has been requested or for each restored transaction.
+Payment transaction notifications are sent after a payment has been requested
+or for each restored transaction.
 
 ```objective-c
 - (void)storePaymentTransactionFinished:(NSNotification*)notification
@@ -118,8 +154,6 @@ Payment transaction notifications are sent after a payment has been requested or
     SKPaymentTransaction *transaction = notification.rm_transaction;
 }
 
-// iOS 8+ only
-
 - (void)storePaymentTransactionDeferred:(NSNotification*)notification
 {
     NSString *productIdentifier = notification.rm_productIdentifier;
@@ -127,7 +161,7 @@ Payment transaction notifications are sent after a payment has been requested or
 }
 ```
 
-###Restore transactions notifications
+### Restore transactions notifications
 
 ```objective-c
 - (void)storeRestoreTransactionsFailed:(NSNotification*)notification;
@@ -141,7 +175,7 @@ Payment transaction notifications are sent after a payment has been requested or
 }
 ```
 
-###Download notifications (iOS 6+ only)
+### Download notifications
 
 For Apple-hosted and self-hosted downloads:
 
@@ -188,7 +222,7 @@ Only for Apple-hosted downloads:
 }
 ```
 
-###Refresh receipt notifications (iOS 7+ only)
+### Refresh receipt notifications
 
 ```objective-c
 - (void)storeRefreshReceiptFailed:(NSNotification*)notification;
@@ -199,32 +233,40 @@ Only for Apple-hosted downloads:
 - (void)storeRefreshReceiptFinished:(NSNotification*)notification { }
 ```
 
-##Receipt verification
+## Receipt verification
 
-RMStore doesn't perform receipt verification by default but provides reference implementations. You can implement your own custom verification or use the reference verifiers provided by the library.
+RMStore doesn't perform receipt verification by default but provides reference
+implementations. You can implement your own custom verification or use the
+reference verifiers provided by the library.
 
-Both options are outlined below. For more info, check out the [wiki](https://github.com/robotmedia/RMStore/wiki/Receipt-verification).
+Both options are outlined below. For more info, check out the
+[wiki](https://github.com/robotmedia/RMStore/wiki/Receipt-verification).
 
-###Reference verifiers
 
-RMStore provides receipt verification via `RMStoreAppReceiptVerifier` (for iOS 7 or higher) and `RMStoreTransactionReceiptVerifier` (for iOS 6 or lower). To use any of them, add the corresponding files from [RMStore/Optional](https://github.com/robotmedia/RMStore/tree/master/RMStore/Optional) into your project and set the verifier delegate (`receiptVerifier`) at startup. For example:
+### Reference verifiers
+
+RMStore provides receipt verification via `RMStoreAppReceiptVerifier`. To use
+it, add the corresponding files from `RMStore/Optional/` into your project and
+set the verifier delegate (`receiptVerifier`) at startup. For example:
 
 ```objective-c
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    const BOOL iOS7OrHigher = floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_6_1;
-    _receiptVerifier = iOS7OrHigher ? [[RMStoreAppReceiptVerifier alloc] init] : [[RMStoreTransactionReceiptVerifier alloc] init];
+    _receiptVerifier = [[RMStoreAppReceiptVerifier alloc] init];
     [RMStore defaultStore].receiptVerifier = _receiptVerifier;
     // Your code
     return YES;
 }
 ```
 
-If security is a concern you might want to avoid using an open source verification logic, and provide your own custom verifier instead.
+If security is a concern you might want to avoid using an open source
+verification logic, and provide your own custom verifier instead.
 
-###Custom verifier
 
-RMStore delegates receipt verification, enabling you to provide your own implementation using  the `RMStoreReceiptVerifier` protocol:
+### Custom verifier
+
+RMStore delegates receipt verification, enabling you to provide your own
+implementation using  the `RMStoreReceiptVerifier` protocol:
 
 ```objective-c
 - (void)verifyTransaction:(SKPaymentTransaction*)transaction
@@ -232,23 +274,39 @@ RMStore delegates receipt verification, enabling you to provide your own impleme
                            failure:(void (^)(NSError *error))failureBlock;
 ```
 
-Call `successBlock` if the receipt passes verification, and `failureBlock` if it doesn't. If verification could not be completed (e.g., due to connection issues), then `error` must be of code `RMStoreErrorCodeUnableToCompleteVerification` to prevent RMStore to finish the transaction.
+Call `successBlock` if the receipt passes verification, and `failureBlock` if it
+doesn't. If verification couldn't be completed (e.g., due to connection issues),
+then `error` must be of code `RMStoreErrorCodeUnableToCompleteVerification` to
+prevent RMStore from finishing the transaction.
 
-You will also need to set the `receiptVerifier` delegate at startup, as indicated above.
+You will also need to set the `receiptVerifier` delegate at startup, as
+indicated above.
 
-##Downloading content
 
-RMStore automatically downloads Apple-hosted content and provides a delegate for a self-hosted content.
+## Downloading content
 
-###Apple-hosted content
+RMStore automatically downloads Apple-hosted content and provides a delegate
+for a self-hosted content.
 
-Downloadable content hosted by Apple (`SKDownload`) will be automatically downloaded when purchasing o restoring a product. RMStore will notify observers of the download progress by calling `storeDownloadUpdate:` and finally `storeDownloadFinished:`. Additionally, RMStore notifies when downloads are paused, cancelled or have failed.
 
-RMStore will notify that a transaction finished or failed only after all of its downloads have been processed. If you use blocks, they will called afterwards as well. The same applies to restoring transactions.
+### Apple-hosted content
 
-###Self-hosted content
+Downloadable content hosted by Apple (`SKDownload`) will be automatically
+downloaded when purchasing o restoring a product. RMStore will notify observers
+of the download progress by calling `storeDownloadUpdate:` and finally
+`storeDownloadFinished:`. Additionally, RMStore notifies when downloads are
+paused, cancelled or have failed.
 
-RMStore delegates the downloading of self-hosted content via the optional `contentDownloader` delegate. You can provide your own implementation using the `RMStoreContentDownloader` protocol:
+RMStore will notify that a transaction finished or failed only after all of its
+downloads have been processed. If you use blocks, they will called afterwards
+as well. The same applies to restoring transactions.
+
+
+### Self-hosted content
+
+RMStore delegates the downloading of self-hosted content via the optional
+`contentDownloader` delegate. You can provide your own implementation using
+the `RMStoreContentDownloader` protocol:
 
 ```objective-c
 - (void)downloadContentForTransaction:(SKPaymentTransaction*)transaction
@@ -257,25 +315,45 @@ RMStore delegates the downloading of self-hosted content via the optional `conte
                               failure:(void (^)(NSError *error))failureBlock;
 ```
 
-Call `successBlock` if the download is successful, `failureBlock` if it isn't and `progressBlock` to notify the download progress. RMStore will consider that a transaction has finished or failed only after the content downloader delegate has successfully or unsuccessfully downloaded its content.
+Call `successBlock` if the download is successful, `failureBlock` if it isn't
+and `progressBlock` to notify the download progress. RMStore will consider that
+a transaction has finished or failed only after the content downloader delegate
+has successfully or unsuccessfully downloaded its content.
+
 
 ##Transaction persistence
 
-RMStore delegates transaction persistence and provides two optional reference implementations for storing transactions in the Keychain or in `NSUserDefaults`. You can implement your transaction, use the reference implementations provided by the library or, in the case of non-consumables and auto-renewable subscriptions, get the transactions directly from the receipt.
+RMStore delegates transaction persistence and provides two optional reference
+implementations for storing transactions in the Keychain or in `NSUserDefaults`.
+You can implement your transaction, use the reference implementations provided
+by the library or, in the case of non-consumables and auto-renewable
+subscriptions, get the transactions directly from the receipt.
 
 For more info, check out the [wiki](https://github.com/robotmedia/RMStore/wiki/Transaction-persistence).
 
-## Accepting Store Payments (iOS 11+ only)
-iOS 11 added support for users to purchase in-app purchases through the App Store directly. RMStore supports this functionality by implementing the below `SKPaymentTransactionObserver` delegate method.
+
+## Accepting Store Payments
+
+iOS 11 added support for users to purchase in-app purchases through the
+App Store directly. RMStore supports this functionality by implementing the
+below `SKPaymentTransactionObserver` delegate method.
 
 ```objective-c
 (BOOL)paymentQueue:(SKPaymentQueue *)queue shouldAddStorePayment:(SKPayment *)payment forProduct:(SKProduct *)product;
 ```
 
-### RMStoreStorePaymentAcceptor
-RMStore uses `RMStoreStorePaymentAcceptor` to determine whether or not the store payment should be added to the payment queue (accepted). If you **don't** provide a `RMStoreStorePaymentAcceptor`, any store payment received by RMStore will **not** be added to the payment queue (accepted) and will be stored, allwoing it to be added to the payment queue later.
 
-If you provide your own `RMStoreStorePaymentAcceptor` and return `NO` from `acceptStorePayment:`, the store payment will also be stored by RMStore. If you return `YES`, the system will add the store payment to the payment queue.
+### RMStoreStorePaymentAcceptor
+
+RMStore uses `RMStoreStorePaymentAcceptor` to determine whether or not the
+store payment should be added to the payment queue (accepted). If you
+**don't** provide a `RMStoreStorePaymentAcceptor`, any store payment received
+by RMStore will **not** be added to the payment queue (accepted) and will be
+stored, allwoing it to be added to the payment queue later.
+
+If you provide your own `RMStoreStorePaymentAcceptor` and return `NO` from
+`acceptStorePayment:`, the store payment will also be stored by RMStore.
+If you return `YES`, the system will add the store payment to the payment queue.
 
 ```objective-c
 @protocol RMStoreStorePaymentAcceptor
@@ -286,35 +364,40 @@ If you provide your own `RMStoreStorePaymentAcceptor` and return `NO` from `acce
 ```
 
 ### Accepting Stored Payments
-When your app is ready to add the stored store payments to the payment queue, use the `acceptStoredStorePayments` method on RMStore.
+
+When your app is ready to add the stored store payments to the payment queue,
+use the `acceptStoredStorePayments` method on RMStore.
 
 ```objective-c
 [[RMStore defaultStore] acceptStoredStorePayments];
 ```
 
-##Requirements
 
-RMStore requires iOS 5.0 or above and ARC.
+## Requirements
 
-##Roadmap
+RMStore requires iOS 9.0+ or macOS 10.12+ and ARC.
 
-RMStore is in initial development and its public API should not be considered stable. Future enhancements will include:
 
-* Tests for OS X
-* Example app for OS X
+## Roadmap
 
-##License
+This fork of RMStore has an uncertain future. I'm mostly maintaining it for my
+own needs (Objective-C on macOS), but I'm happy to implement fixes for iOS as
+well as new IAP features.
 
- Copyright 2013-2016 [Robot Media SL](http://www.robotmedia.net)
 
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
+## License
 
- http://www.apache.org/licenses/LICENSE-2.0
+Copyright 2013-2016 [Robot Media SL](http://www.robotmedia.net)
+Copyright 2013-2019 by additional contributors. See git contributors.
 
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

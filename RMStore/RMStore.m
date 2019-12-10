@@ -131,6 +131,7 @@ typedef void (^RMStoreSuccessBlock)(void);
 
 @interface RMAddPaymentParameters : NSObject
 
+@property (nonatomic, strong) RMSKPaymentTransactionSuccessBlock deferBlock;
 @property (nonatomic, strong) RMSKPaymentTransactionSuccessBlock successBlock;
 @property (nonatomic, strong) RMSKPaymentTransactionFailureBlock failureBlock;
 
@@ -250,6 +251,15 @@ typedef void (^RMStoreSuccessBlock)(void);
 
 - (void)addPayment:(NSString*)productIdentifier
               user:(NSString*)userIdentifier
+           success:(void (^)(SKPaymentTransaction *transaction))successBlock
+           failure:(void (^)(SKPaymentTransaction *transaction, NSError *error))failureBlock
+{
+    [self addPayment:productIdentifier user:nil defer:nil success:successBlock failure:failureBlock];
+}
+
+- (void)addPayment:(NSString*)productIdentifier
+              user:(NSString*)userIdentifier
+             defer:(void (^)(SKPaymentTransaction *transaction))deferBlock
            success:(void (^)(SKPaymentTransaction *transaction))successBlock
            failure:(void (^)(SKPaymentTransaction *transaction, NSError *error))failureBlock
 {
@@ -546,11 +556,7 @@ typedef void (^RMStoreSuccessBlock)(void);
 {
     for (SKDownload *download in downloads)
     {
-#if TARGET_OS_IPHONE
-        switch (download.downloadState)
-#elif TARGET_OS_MAC
         switch (download.state)
-#endif
         {
             case SKDownloadStateActive:
                 [self didUpdateDownload:download queue:queue];
@@ -574,6 +580,9 @@ typedef void (^RMStoreSuccessBlock)(void);
     }
 }
 
+
+#if TARGET_OS_IPHONE && !defined(TARGET_OS_MACCATALYST)
+
 - (BOOL)paymentQueue:(SKPaymentQueue *)queue shouldAddStorePayment:(SKPayment *)payment forProduct:(SKProduct *)product
 {
     RMStoreLog(@"Should add store payment for product %@", product.productIdentifier);
@@ -595,16 +604,8 @@ typedef void (^RMStoreSuccessBlock)(void);
     return NO; // Always defer promoted in app purcahse
 }
 
-- (BOOL)paymentQueue:(SKPaymentQueue *)queue shouldAddStorePayment:(SKPayment *)payment forProduct:(SKProduct *)product API_AVAILABLE(ios(11.0))
-{
-    if (self.storePaymentAcceptor == nil || ![self.storePaymentAcceptor acceptStorePayment:payment fromQueue:queue forProduct:product])
-    {
-        [_storedStorePayments addObject:payment];
-        return NO;
-    } else {
-        return YES;
-    }
-}
+#endif
+
 
 #pragma mark Download State
 
@@ -689,11 +690,7 @@ typedef void (^RMStoreSuccessBlock)(void);
     {
         for (SKDownload *download in transaction.downloads)
         {
-#if TARGET_OS_IPHONE
-            switch (download.downloadState)
-#elif TARGET_OS_MAC
             switch (download.state)
-#endif
             {
                 case SKDownloadStateActive:
                 case SKDownloadStatePaused:

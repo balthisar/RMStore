@@ -27,6 +27,11 @@ NSString* const RMStoreCoderTransactionIdentifierKey = @"transactionIdentifier";
 
 @implementation RMStoreTransaction
 
++ (BOOL)supportsSecureCoding
+{
+    return YES;
+}
+
 - (instancetype)initWithPaymentTransaction:(SKPaymentTransaction*)paymentTransaction
 {
     if (self = [super init])
@@ -43,9 +48,9 @@ NSString* const RMStoreCoderTransactionIdentifierKey = @"transactionIdentifier";
     if (self = [super init])
     {
         _consumed = [decoder decodeBoolForKey:RMStoreCoderConsumedKey];
-        _productIdentifier = [decoder decodeObjectForKey:RMStoreCoderProductIdentifierKey];
-        _transactionDate = [decoder decodeObjectForKey:RMStoreCoderTransactionDateKey];
-        _transactionIdentifier = [decoder decodeObjectForKey:RMStoreCoderTransactionIdentifierKey];
+        _productIdentifier = [decoder decodeObjectOfClass:[NSString class] forKey:RMStoreCoderProductIdentifierKey];
+        _transactionDate = [decoder decodeObjectOfClass:[NSDate class] forKey:RMStoreCoderTransactionDateKey];
+        _transactionIdentifier = [decoder decodeObjectOfClass:[NSString class] forKey:RMStoreCoderTransactionIdentifierKey];
     }
     return self;
 }

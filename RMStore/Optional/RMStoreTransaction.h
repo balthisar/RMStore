@@ -21,7 +21,7 @@
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
 
-@interface RMStoreTransaction : NSObject<NSCoding>
+@interface RMStoreTransaction : NSObject<NSSecureCoding>
 
 @property(nonatomic, assign) BOOL consumed;
 @property(nonatomic, copy) NSString *productIdentifier;

@@ -33,8 +33,8 @@
 
     // Apple recommends to refresh the receipt if validation fails on iOS
     [[RMStore defaultStore] refreshReceiptOnSuccess:^{
-        RMAppReceipt *receipt = [RMAppReceipt bundleReceipt];
-        [self verifyTransaction:transaction inReceipt:receipt success:successBlock failure:failureBlock];
+        RMAppReceipt *refreshedReceipt = [RMAppReceipt bundleReceipt];
+        [self verifyTransaction:transaction inReceipt:refreshedReceipt success:successBlock failure:failureBlock];
     } failure:^(NSError *error) {
         [self failWithBlock:failureBlock error:error];
     }];
@@ -61,10 +61,11 @@
 {
     if (!_bundleVersion)
     {
+        NSBundle *bundle = [NSBundle bundleForClass:[self class]];
 #if TARGET_OS_IPHONE
-        return [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
+        return [bundle objectForInfoDictionaryKey:@"CFBundleVersion"];
 #else
-        return [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+        return [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
 #endif
     }
     return _bundleVersion;

@@ -29,6 +29,7 @@
 #elif TARGET_OS_MAC
 #import <IOKit/IOKitLib.h>
 #import <Security/SecKeychainItem.h>
+#import <Security/Security.h>
 #endif
 
 #if DEBUG
@@ -168,56 +169,40 @@ static CFDataRef CopyMACAddressData()
 
 static inline SecCertificateRef AppleRootCAFromKeychain( void )
 {
-    SecKeychainRef roots = NULL;
-    SecKeychainSearchRef search = NULL;
-    SecCertificateRef cert = NULL;
-    BOOL cfReleaseKeychain = YES;
-    
-    // there's a GC bug with this guy it seems
-    OSStatus err = SecKeychainOpen( "/System/Library/Keychains/SystemRootCertificates.keychain", &roots );
-    
-    if ( err != noErr )
-    {
-        CFStringRef errStr = SecCopyErrorMessageString( err, NULL );
-        RMAppReceiptLog( @"Error: %d (%@)", err, errStr );
-        CFRelease( errStr );
+    CFMutableDictionaryRef search;
+    CFArrayRef result;
+    SecKeychainRef keychain;
+    SecCertificateRef item;
+    CFDataRef dat;
+    SecCertificateRef certificateRef = NULL;
+
+    // Load keychain
+    if( SecKeychainOpen("/System/Library/Keychains/SystemRootCertificates.keychain",&keychain) != errSecSuccess )
         return NULL;
-    }
-    
-    SecKeychainAttribute labelAttr = { .tag = kSecLabelItemAttr, .length = 13, .data = (void *)"Apple Root CA" };
-    SecKeychainAttributeList attrs = { .count = 1, .attr = &labelAttr };
-    
-    err = SecKeychainSearchCreateFromAttributes( roots, kSecCertificateItemClass, &attrs, &search );
-    if ( err != noErr )
+
+    // Search for certificates
+    search = CFDictionaryCreateMutable( NULL, 0, NULL, NULL );
+    CFDictionarySetValue( search, kSecClass, kSecClassCertificate );
+    CFDictionarySetValue( search, kSecMatchLimit, kSecMatchLimitAll );
+    CFDictionarySetValue( search, kSecReturnRef, kCFBooleanTrue );
+    CFDictionarySetValue( search, kSecMatchSearchList, CFArrayCreate(NULL, (const void **)&keychain, 1, NULL) );
+    if ( SecItemCopyMatching( search, (CFTypeRef *)&result ) == errSecSuccess )
     {
-        CFStringRef errStr = SecCopyErrorMessageString( err, NULL );
-        RMAppReceiptLog( @"Error: %d (%@)", err, errStr );
-        CFRelease( errStr );
-        if ( cfReleaseKeychain )
-            CFRelease( roots );
-        return NULL;
+        CFIndex n = CFArrayGetCount( result );
+        for( CFIndex i = 0; i < n; i++ ){
+            item = (SecCertificateRef)CFArrayGetValueAtIndex( result, i );
+
+            // Get certificate in DER format
+            dat = SecCertificateCopyData( item );
+            if ( dat )
+            {
+                certificateRef = SecCertificateCreateWithData(NULL, dat);
+                CFRelease( dat );
+            }
+        }
     }
-    
-    SecKeychainItemRef item = NULL;
-    err = SecKeychainSearchCopyNext( search, &item );
-    if ( err != noErr )
-    {
-        CFStringRef errStr = SecCopyErrorMessageString( err, NULL );
-        RMAppReceiptLog( @"Error: %d (%@)", err, errStr );
-        CFRelease( errStr );
-        if ( cfReleaseKeychain )
-            CFRelease( roots );
-        
-        return NULL;
-    }
-    
-    cert = (SecCertificateRef)item;
-    CFRelease( search );
-    
-    if ( cfReleaseKeychain )
-        CFRelease( roots );
-    
-    return ( cert );
+    CFRelease(keychain);
+    return certificateRef;
 }
 
 #endif
@@ -283,8 +268,6 @@ static NSURL *_appleRootCertificateURL = nil;
 
 -(BOOL)containsActiveAutoRenewableSubscriptionOfProductIdentifier:(NSString *)productIdentifier forDate:(NSDate *)date
 {
-    RMAppReceiptIAP *lastTransaction = nil;
-    
     for (RMAppReceiptIAP *iap in self.inAppPurchases)
     {
         if ([iap.productIdentifier isEqualToString:productIdentifier] && [iap isActiveAutoRenewableSubscriptionForDate:date]) return YES;
@@ -391,7 +374,6 @@ static NSURL *_appleRootCertificateURL = nil;
     // Based on: https://developer.apple.com/library/ios/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateLocally.html#//apple_ref/doc/uid/TP40010573-CH1-SW17
     static int verified = 1;
     int result = 0;
-    OpenSSL_add_all_digests(); // Required for PKCS7_verify to work
     X509_STORE *store = X509_STORE_new();
     if (store)
     {
@@ -409,7 +391,6 @@ static NSURL *_appleRootCertificateURL = nil;
         }
     }
     X509_STORE_free(store);
-    EVP_cleanup(); // Balances OpenSSL_add_all_digests (), perhttp://www.openssl.org/docs/crypto/OpenSSL_add_all_algorithms.html
     
     return result == verified;
 }

@@ -18,7 +18,7 @@
 }
 
 - (void)testInitWithASN1Data_invalid
-{ SKIP_IF_VERSION(NSFoundationVersionNumber_iOS_6_1)
+{
     NSData *data = [NSData data];
     _purchase = [[RMAppReceiptIAP alloc] initWithASN1Data:data];
     XCTAssertNotNil(_purchase, @"");

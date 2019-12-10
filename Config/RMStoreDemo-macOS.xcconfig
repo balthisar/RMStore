@@ -1,0 +1,24 @@
+//
+// RMStoreDemo-macOS.xcconfig
+//
+// Base Release Configuration.
+//
+//
+//
+//
+//
+
+//*****************************************************************************
+// Base Settings
+//*****************************************************************************
+
+PRODUCT_NAME              = $TARGET_NAME
+PRODUCT_BUNDLE_IDENTIFIER = com.balthisar.RMStoreDemoMac
+SDKROOT                   = macosx
+INFOPLIST_FILE            = RMStoreDemo-macOS/Info.plist
+
+CODE_SIGN_ENTITLEMENTS    = RMStoreDemo-macOS/RMStoreDemo-macOS.entitlements
+CODE_SIGN_IDENTITY        = -
+
+LD_RUNPATH_SEARCH_PATHS   = $(inherited) @executable_path/../Frameworks
+

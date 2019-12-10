@@ -1,0 +1,32 @@
+//
+// RMStoreTests.xcconfig
+//
+// Base Release Configuration.
+//
+//
+//
+//
+//
+
+//*****************************************************************************
+// Base Settings
+//*****************************************************************************
+
+PRODUCT_NAME                                 = $(TARGET_NAME)
+PRODUCT_BUNDLE_IDENTIFIER                    = com.balthisar.RMStoreTestsHost
+INFOPLIST_FILE                               = RMStoreTests/RMStoreTestsHost/Info.plist
+SDKROOT                                      = iphoneos
+TARGETED_DEVICE_FAMILY                       = 1,2
+CODE_SIGN_ENTITLEMENTS                       = RMStoreTests/RMStoreTestsHost/RMStoreTestsHost.entitlements
+CODE_SIGN_STYLE                              = Automatic
+DEVELOPMENT_TEAM                             = 9PN2JXXG7Y
+
+DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = YES
+SUPPORTS_MACCATALYST                         = YES
+
+ONLY_ACTIVE_ARCH                             = YES
+ENABLE_TESTABILITY                           = YES
+COPY_PHASE_STRIP                             = NO
+
+LD_RUNPATH_SEARCH_PATHS                      = $(inherited) @executable_path/Frameworks
+

@@ -48,14 +48,11 @@
     
     transaction.consumed = YES;
 
-    NSMutableData *data = [[NSMutableData alloc] init];
-    NSKeyedArchiver *archiver = [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
-    [archiver encodeObject:transaction];
-    [archiver finishEncoding];
-    
-    
-    NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
-    RMStoreTransaction *decodedTransaction = [unarchiver decodeObject];
+    NSError *err = nil;
+
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:transaction requiringSecureCoding:YES error:&err];
+
+    RMStoreTransaction *decodedTransaction = [NSKeyedUnarchiver unarchivedObjectOfClass:[RMStoreTransaction class] fromData:data error:&err];
     
     XCTAssertNotNil(decodedTransaction, @"");
     XCTAssertEqualObjects(decodedTransaction.productIdentifier, transaction.productIdentifier, @"");

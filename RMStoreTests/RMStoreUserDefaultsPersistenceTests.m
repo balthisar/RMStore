@@ -189,7 +189,7 @@
     id transaction = [OCMockObject mockForClass:[SKPaymentTransaction class]];
     [[[transaction stub] andReturn:[NSDate date]] transactionDate];
     [[[transaction stub] andReturn:@"transaction"] transactionIdentifier];
-    [[[transaction stub] andReturn:[NSData data]] transactionReceipt];
+//    [[[transaction stub] andReturn:[NSData data]] transactionReceipt];
     id payment = [OCMockObject mockForClass:[SKPayment class]];
     [[[payment stub] andReturn:productIdentifier] productIdentifier];
     [[[transaction stub] andReturn:payment] payment];

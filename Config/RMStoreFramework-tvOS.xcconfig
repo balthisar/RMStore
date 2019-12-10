@@ -1,0 +1,30 @@
+//
+// RMStoreFramework-iOS.xcconfig
+//
+// Base Release Configuration.
+//
+//
+//
+//
+//
+
+//*****************************************************************************
+// Base Settings
+//*****************************************************************************
+
+PRODUCT_NAME                = RMStoreFramework
+SDKROOT                     = appletvos
+PRODUCT_BUNDLE_IDENTIFIER   = com.balthisar.RMStore-tvOS
+INFOPLIST_FILE              = RMStoreFramework/Info.plist
+TARGETED_DEVICE_FAMILY      = 3
+DEFINES_MODULE              = YES
+
+DYLIB_COMPATIBILITY_VERSION = 1
+DYLIB_CURRENT_VERSION       = 1
+DYLIB_INSTALL_NAME_BASE     = @rpath
+
+LD_RUNPATH_SEARCH_PATHS     = $(inherited) @executable_path/Frameworks @loader_path/Frameworks
+
+// Statically-bind openssl into our framework.
+GENERATE_MASTER_OBJECT_FILE = YES
+PRELINK_LIBS                = $(BUILT_PRODUCTS_DIR)/openssl.framework/openssl

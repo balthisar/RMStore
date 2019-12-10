@@ -1,1 +1,6 @@
-github "krzyzanowskim/OpenSSL"
+#
+# To support distribution as an XCFramework, we'll use this build of OpenSSL,
+# which I've modified to support Catalyst, and is released as an XCFramework.
+#
+
+binary "https://raw.githubusercontent.com/balthisar/openssl-xcframeworks/master/OpenSSL-ContainerFramework.json"

@@ -10,9 +10,6 @@ GitHub issues are used to track bugs and enhancements. Please ensure that your
 description is clear and has sufficient instructions to be able to reproduce
 the issue.
 
-Please post usage questions in Stack Overflow using the 
-[RMStore](http://stackoverflow.com/questions/tagged/rmstore) tag.
-
 ## Pull Requests
 
 1. Fork the repo and create your branch from `master`.

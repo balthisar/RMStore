@@ -23,11 +23,27 @@
 #import "RMPurchasesViewController.h"
 #import "RMStore.h"
 #import "RMStoreAppReceiptVerifier.h"
-#import "RMStoreKeychainPersistence.h"
+#if TARGET_OS_MACCATALYST
+#    import "RMStoreUserDefaultsPersistence.h"
+#else
+#    import "RMStoreKeychainPersistence.h"
+#endif
 
 @implementation RMAppDelegate {
     id<RMStoreReceiptVerifier> _receiptVerifier;
+    
+    /* Catalyst won't work with Keychain Persistence unless we enable Keychain
+     * sharing in the Signing & Capabilities section of the target, which we
+     * would do, but won't, because it means PRODUCT_BUNDLE_IDENTIFIER won't
+     * pick up our sample product ID's, which currently work with *every*
+     * sample target. We'll persist things in User Defaults on Catalyst,
+     * instead.
+     */
+#if TARGET_OS_MACCATALYST
+    RMStoreUserDefaultsPersistence *_persistence;
+#else
     RMStoreKeychainPersistence *_persistence;
+#endif
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -53,7 +69,11 @@
     _receiptVerifier = [[RMStoreAppReceiptVerifier alloc] init];
     [RMStore defaultStore].receiptVerifier = _receiptVerifier;
     
+#if TARGET_OS_MACCATALYST
+    _persistence = [[RMStoreUserDefaultsPersistence alloc] init];
+#else
     _persistence = [[RMStoreKeychainPersistence alloc] init];
+#endif
     [RMStore defaultStore].transactionPersistor = _persistence;
 }
 

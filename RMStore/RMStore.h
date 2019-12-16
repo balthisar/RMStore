@@ -393,7 +393,7 @@ extern NSString *const RMStoreNotificationExtraUserInfo;
 
 /** Used in @c storeDownload*:.
  */
-@property (nonatomic, readonly) SKDownload *rm_storeDownload NS_AVAILABLE(10_8, 6_0);
+@property (nonatomic, readonly) SKDownload *rm_storeDownload;
 
 /** Used in @c storeDownloadFailed:, @c storePaymentTransactionFailed:, @c storeProductsRequestFailed:, @c storeRefreshReceiptFailed: and @c storeRestoreTransactionsFailed:.
  */

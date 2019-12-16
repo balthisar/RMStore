@@ -17,12 +17,13 @@
 
 PRODUCT_NAME                                 = RMStoreDemo
 PRODUCT_BUNDLE_IDENTIFIER                    = com.balthisar.RMStoreDemoMac
-INFOPLIST_FILE                               = RMStoreDemo-iOS/RMStoreDemo-Info.plist
+
+INFOPLIST_FILE                               = RMStoreDemo-iOS/iOS/Info.plist
 SUPPORTS_MACCATALYST                         = YES
 WRAPPER_EXTENSION                            = app
 
 LD_RUNPATH_SEARCH_PATHS                      = $(inherited) @executable_path/Frameworks
 
-CODE_SIGN_ENTITLEMENTS                       = RMStoreDemo-iOS/RMStoreDemo (iOS).entitlements
+CODE_SIGN_ENTITLEMENTS                       = RMStoreDemo-iOS/iOS/RMStoreDemo (iOS).entitlements
 CODE_SIGN_IDENTITY                           = iPhone Developer
 DEVELOPMENT_TEAM                             = 9PN2JXXG7Y

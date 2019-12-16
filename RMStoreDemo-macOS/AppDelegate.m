@@ -12,73 +12,34 @@
 @interface AppDelegate ()
 
 @property (strong, readwrite, nonatomic) RMStoreAppReceiptVerifier *verifier;
+@property( strong, readwrite, nonatomic) RMStoreKeychainPersistence *persistence;
 
 @end
 
 @implementation AppDelegate
 
+- (instancetype)init
+{
+    if ( (self = [super init]) )
+    {
+        self.verifier = [[RMStoreAppReceiptVerifier alloc] init];
+        [RMStore defaultStore].receiptVerifier = self.verifier;
+
+        self.persistence = [[RMStoreKeychainPersistence alloc] init];
+        [RMStore defaultStore].transactionPersistor = self.persistence;
+    }
+    
+    return self;
+}
+
+
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    self.verifier = [[RMStoreAppReceiptVerifier alloc] init];
-    [RMStore defaultStore].receiptVerifier = self.verifier;
-    [self doStoreStuff];
-}
-
-
-- (void)applicationWillTerminate:(NSNotification *)aNotification
-{
-    // Insert code here to tear down your application
-}
-
-
-#pragma mark - Actions
-
-- (IBAction)doBuySomething:(id)sender
-{
-    [[RMStore defaultStore] addPayment:@"com.balthisar.RMStoreDemoMac.consumable" success:^(SKPaymentTransaction *transaction)
-    {
-        NSLog(@"%@", @"Success with addPayment.");
-    } failure:^(SKPaymentTransaction *transaction, NSError *error)
-    {
-        NSLog(@"%@", @"Payment Transaction Failed");
-        NSLog(@"Reason: %@", error.localizedDescription);
-
+    [[RMStore defaultStore] refreshReceiptOnSuccess:^{
+        NSLog(@"%@", @"Success");
+    } failure:^(NSError *error) {
+        NSLog(@"%@", @"Lack of Success");
     }];
 }
-
-
-#pragma mark - Private
-
-
-- (void)doStoreStuff
-{
-    NSArray *_products = @[@"com.balthisar.RMStoreDemoMac.nonconsumable",
-                           @"com.balthisar.RMStoreDemoMac.consumable",
-                           @"com.balthisar.RMStoreDemoMac.subrenewing",
-                           @"com.balthisar.RMStoreDemoMac.sub52",
-                           @"com.balthisar.RMStoreDemoMac.subnonrenewing",
-                           @"com.balthisar.RMStoreDemoMac.fake"];
-    
-    NSSet *mySet = [NSSet setWithArray:_products];
-    RMStore *store = [RMStore defaultStore];
-    [store requestProducts:mySet success:^(NSArray *products, NSArray *invalidProductIdentifiers)
-     {
-        NSLog(@"%@", @"Success\n-------");
-        for ( SKProduct *product in products )
-        {
-            NSLog(@"   productIdentifier: %@", product.productIdentifier);
-            NSLog(@"      localizedTitle: %@", product.localizedTitle);
-            NSLog(@"localizedDescription: %@", product.localizedDescription);
-            NSLog(@"      contentVersion: %@", product.contentVersion);
-            NSLog(@"               price: %@", product.price);
-            NSLog(@"         priceLocale: %@\n---", product.priceLocale.localeIdentifier);
-        }
-        NSLog(@"%@", @"However, these ID's are invalid:");
-        NSLog(@"%@", invalidProductIdentifiers);
-    } failure:^(NSError *error) {
-        NSLog(@"Error = %@", error);
-        }];
-}
-
 
 @end

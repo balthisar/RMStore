@@ -40,7 +40,10 @@
 {
     [super viewDidLoad];
     
-#warning Replace with your product ids.    
+    /* An array of product names as registered on the App Store. One of this
+     * sample list is deliberately not registered, so that we can deal with
+     * a negative response from the server appropriately.
+     */
     _products = @[@"com.balthisar.RMStoreDemoMac.nonconsumable",
                   @"com.balthisar.RMStoreDemoMac.consumable",
                   @"com.balthisar.RMStoreDemoMac.subrenewing",
@@ -48,15 +51,22 @@
                   @"com.balthisar.RMStoreDemoMac.subnonrenewing",
                   @"com.balthisar.RMStoreDemoMac.fake"];
 
-    [[RMStore defaultStore] requestProducts:[NSSet setWithArray:_products] success:^(NSArray *products, NSArray *invalidProductIdentifiers) {
+    
+    /* This will actually begin the fetching process from the App Store.
+     */
+    [[RMStore defaultStore] requestProducts:[NSSet setWithArray:_products] success:^(NSArray *products, NSArray *invalidProductIdentifiers)
+    {
+        NSMutableArray *new_products = [NSMutableArray arrayWithArray:self->_products];
+        [new_products removeObjectsInArray:invalidProductIdentifiers];
+        self->_products = new_products;
+        
         dispatch_async(dispatch_get_main_queue(), ^{
            self->_productsRequestFinished = YES;
            [self.tableView reloadData];
         });
-    } failure:^(NSError *error) {
-        
+    } failure:^(NSError *error)
+    {
         dispatch_async(dispatch_get_main_queue(), ^{
-
             UIAlertController *alertView = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Products Request Failed", @"")
                                                                                message:error.localizedDescription
                                                                         preferredStyle:UIAlertControllerStyleAlert];
@@ -70,6 +80,7 @@
         });
     }];
 }
+
 
 #pragma mark Table view data source
 
@@ -93,6 +104,7 @@
     return cell;
 }
 
+
 #pragma mark Table view delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -101,8 +113,10 @@
     
     NSString *productID = _products[indexPath.row];
 
-    [[RMStore defaultStore] addPayment:productID success:^(SKPaymentTransaction *transaction) {
-
+    [[RMStore defaultStore] addPayment:productID success:^(SKPaymentTransaction *transaction)
+    {
+        NSLog(@"%@", @"addPayment successful.");
+        
     } failure:^(SKPaymentTransaction *transaction, NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
             

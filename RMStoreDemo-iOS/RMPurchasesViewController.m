@@ -134,13 +134,17 @@
 
 - (void)storeProductsRequestFinished:(NSNotification*)notification
 {
-    [self.tableView reloadData];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.tableView reloadData];
+    });
 }
 
 - (void)storePaymentTransactionFinished:(NSNotification*)notification
 {
-    _productIdentifiers = _persistence.purchasedProductIdentifiers.allObjects;
-    [self.tableView reloadData];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self->_productIdentifiers = self->_persistence.purchasedProductIdentifiers.allObjects;
+        [self.tableView reloadData];
+    });
 }
 
 @end

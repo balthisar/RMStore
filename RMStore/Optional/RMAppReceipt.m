@@ -25,17 +25,17 @@
 #import <openssl/x509.h>
 
 #if TARGET_OS_IPHONE
-#import <UIKit/UIKit.h>
-#elif TARGET_OS_MAC
-#import <IOKit/IOKitLib.h>
-#import <Security/SecKeychainItem.h>
-#import <Security/Security.h>
+#    import <UIKit/UIKit.h>
+#elif TARGET_OS_OSX
+#    import <IOKit/IOKitLib.h>
+#    import <Security/SecKeychainItem.h>
+#    import <Security/Security.h>
 #endif
 
 #if DEBUG
-#define RMAppReceiptLog(...) NSLog(@"RMAppReceipt: %@", [NSString stringWithFormat:__VA_ARGS__]);
+#    define RMAppReceiptLog(...) NSLog(@"RMAppReceipt: %@", [NSString stringWithFormat:__VA_ARGS__]);
 #else
-#define RMAppReceiptLog(...)
+#    define RMAppReceiptLog(...)
 #endif
 
 // From https://developer.apple.com/library/ios/releasenotes/General/ValidateAppStoreReceipt/Chapters/ReceiptFields.html#//apple_ref/doc/uid/TP40010573-CH106-SW1
@@ -115,9 +115,8 @@ static NSString* RMASN1ReadIA5SString(const uint8_t **pp, long omax)
     return RMASN1ReadString(pp, omax, V_ASN1_IA5STRING, NSASCIIStringEncoding);
 }
 
-#if TARGET_OS_MAC && !TARGET_OS_IPHONE
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
 
-// Returns a CFData object, containing the computer's GUID.
 static CFDataRef CopyMACAddressData()
 {
     kern_return_t             kernResult;
@@ -167,42 +166,67 @@ static CFDataRef CopyMACAddressData()
     return macAddress;
 }
 
-static inline SecCertificateRef AppleRootCAFromKeychain( void )
+#endif
+
+#if TARGET_OS_OSX
+
+static inline NSData *AppleRootCAFromKeychain( void )
 {
     CFMutableDictionaryRef search;
     CFArrayRef result;
     SecKeychainRef keychain;
     SecCertificateRef item;
-    CFDataRef dat;
-    SecCertificateRef certificateRef = NULL;
+    NSData *certificateData = nil;
 
-    // Load keychain
-    if( SecKeychainOpen("/System/Library/Keychains/SystemRootCertificates.keychain",&keychain) != errSecSuccess )
+    if (SecKeychainOpen("/System/Library/Keychains/SystemRootCertificates.keychain",&keychain) != errSecSuccess)
+    {
         return NULL;
+    }
 
-    // Search for certificates
+    /* Certificate search */
     search = CFDictionaryCreateMutable( NULL, 0, NULL, NULL );
+    CFArrayRef keychains = CFArrayCreate(NULL, (const void **)&keychain, 1, NULL);
     CFDictionarySetValue( search, kSecClass, kSecClassCertificate );
     CFDictionarySetValue( search, kSecMatchLimit, kSecMatchLimitAll );
     CFDictionarySetValue( search, kSecReturnRef, kCFBooleanTrue );
-    CFDictionarySetValue( search, kSecMatchSearchList, CFArrayCreate(NULL, (const void **)&keychain, 1, NULL) );
+    CFDictionarySetValue( search, kSecMatchSearchList, keychains );
     if ( SecItemCopyMatching( search, (CFTypeRef *)&result ) == errSecSuccess )
     {
         CFIndex n = CFArrayGetCount( result );
-        for( CFIndex i = 0; i < n; i++ ){
+        for ( CFIndex i = 0; i < n; i++ )
+        {
             item = (SecCertificateRef)CFArrayGetValueAtIndex( result, i );
 
-            // Get certificate in DER format
-            dat = SecCertificateCopyData( item );
-            if ( dat )
+            SecKeychainAttributeList list;
+            SecKeychainAttribute attributes[1];
+
+            attributes[0].tag = kSecLabelItemAttr;
+
+            list.count = 1;
+            list.attr = attributes;
+
+            SecKeychainItemCopyContent((SecKeychainItemRef)item, nil, &list, nil, nil);
+            NSData *nameData = [NSData dataWithBytesNoCopy:attributes[0].data length:attributes[0].length freeWhenDone:NO];
+            NSString *name = [[NSString alloc] initWithData:nameData encoding:NSUTF8StringEncoding];
+            SecKeychainItemFreeContent(&list, NULL);
+            if([name isEqualToString:@"Apple Root CA"])
             {
-                certificateRef = SecCertificateCreateWithData(NULL, dat);
-                CFRelease( dat );
+                certificateData = CFBridgingRelease(SecCertificateCopyData(item));
+                break;
             }
         }
     }
+
+    if (!certificateData)
+    {
+        NSLog(@"%@", @"Apple Root CA fetching from Keychain failed.");
+    }
+
+    CFRelease(search);
+    CFRelease(keychains);
     CFRelease(keychain);
-    return certificateRef;
+
+    return certificateData;
 }
 
 #endif
@@ -278,18 +302,14 @@ static NSURL *_appleRootCertificateURL = nil;
 
 - (BOOL)verifyReceiptHash
 {
-    // TODO: Getting the uuid in Mac is different. See: https://developer.apple.com/library/ios/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateLocally.html#//apple_ref/doc/uid/TP40010573-CH1-SW5
-    
-    // Order taken from: https://developer.apple.com/library/ios/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateLocally.html#//apple_ref/doc/uid/TP40010573-CH1-SW5
-
     NSMutableData *data = [NSMutableData data];
-#if TARGET_OS_IPHONE
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+    [data appendData:(__bridge NSData * _Nonnull)(CopyMACAddressData())];
+#elif TARGET_OS_IPHONE
     NSUUID *uuid = [UIDevice currentDevice].identifierForVendor;
     unsigned char uuidBytes[16];
     [uuid getUUIDBytes:uuidBytes];
     [data appendBytes:uuidBytes length:sizeof(uuidBytes)];
-#elif TARGET_OS_MAC
-    [data appendData:(__bridge NSData * _Nonnull)(CopyMACAddressData())];
 #endif
     
     [data appendData:self.opaqueValue];
@@ -333,27 +353,29 @@ static NSURL *_appleRootCertificateURL = nil;
     
     if (!p7) return nil;
     
-    NSData *certificateData = nil;
-#if TARGET_OS_IPHONE
+    /* Get the Apple Root CA certificate. If the certificate is in the bundle,
+     * it will be used on macOS and iOS. If you'd rather always have a fresh
+     * copy, then specify a URL with `setAppleRootCertificateURL`. Apple's
+     * official address for this is:
+     *   https://www.apple.com/appleca/AppleIncRootCertificate.cer
+     * On macOS, you can specify this if you like, but macOS will keep the root
+     * certificate in the keychain up to date, so if there's no certificate in
+     * the bundle and no URL specified, the certificate in the keychain will be
+     * used. Because there's no access to the keychain on iOS, this fallback is
+     * not available.
+     */
+    
     NSURL *certificateURL = _appleRootCertificateURL ? : [[NSBundle mainBundle] URLForResource:@"AppleIncRootCertificate" withExtension:@"cer"];
-    certificateData = [NSData dataWithContentsOfURL:certificateURL];
-#elif TARGET_OS_MAC
-    if (_appleRootCertificateURL)
+    NSData *certificateData = [NSData dataWithContentsOfURL:certificateURL];
+
+#if TARGET_OS_OSX
+    if (!certificateData)
     {
-        certificateData = [NSData dataWithContentsOfURL:_appleRootCertificateURL];
-    }
-    else
-    {
-        // get the Apple root CA from http://www.apple.com/certificateauthority and load it into b_X509
-        //NSData * root = [NSData dataWithContentsOfURL: [NSURL URLWithString: @"http://www.apple.com/certificateauthority/AppleComputerRootCertificate.cer"]];
-        SecCertificateRef cert = AppleRootCAFromKeychain();
-        NSAssert(cert != NULL, @"Failed to load Apple Root CA from keychain");
-        certificateData = CFBridgingRelease(SecCertificateCopyData(cert));
-        CFRelease(cert);
+        certificateData = AppleRootCAFromKeychain();
     }
 #endif
     
-    NSAssert(certificateData != nil, @"Certificate AppleRootCA is missed, add it to the bundle (ios) or provide access to keychain (osx) or specify url `setAppleRootCertificateURL`");
+    NSAssert(certificateData != nil, @"The Apple Root CA couldn not be found. Either add it to the bundle or specify url `setAppleRootCertificateURL`.");
     
     NSData *data = nil;
     if (certificateData && [self verifyPKCS7:p7 withCertificateData:certificateData])

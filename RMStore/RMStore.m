@@ -163,7 +163,7 @@ typedef void (^RMStoreSuccessBlock)(void);
     NSInteger _pendingRestoredTransactionsCount;
     BOOL _restoredCompletedTransactionsFinished;
     
-    SKReceiptRefreshRequest *_refreshReceiptRequest NS_AVAILABLE(10_9, 7_0);
+    SKReceiptRefreshRequest *_refreshReceiptRequest;
     void (^_refreshReceiptFailureBlock)(NSError* error);
     void (^_refreshReceiptSuccessBlock)(void);
     
@@ -277,10 +277,7 @@ typedef void (^RMStoreSuccessBlock)(void);
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
     if ([payment respondsToSelector:@selector(setApplicationUsername:)])
     {
-        if (@available(macOS 10.9, *))
-        {
-            payment.applicationUsername = userIdentifier;
-        }
+        payment.applicationUsername = userIdentifier;
     }
     
     RMAddPaymentParameters *parameters = [[RMAddPaymentParameters alloc] init];
@@ -339,10 +336,7 @@ typedef void (^RMStoreSuccessBlock)(void);
     _pendingRestoredTransactionsCount = 0;
     _restoreTransactionsSuccessBlock = successBlock;
     _restoreTransactionsFailureBlock = failureBlock;
-    if (@available(macOS 10.9, *))
-    {
-        [[SKPaymentQueue defaultQueue] restoreCompletedTransactionsWithApplicationUsername:userIdentifier];
-    }
+    [[SKPaymentQueue defaultQueue] restoreCompletedTransactionsWithApplicationUsername:userIdentifier];
 }
 
 - (void)addPendingPayment
@@ -425,10 +419,7 @@ typedef void (^RMStoreSuccessBlock)(void);
 {
     _refreshReceiptFailureBlock = failureBlock;
     _refreshReceiptSuccessBlock = successBlock;
-    if (@available(macOS 10.9, *))
-    {
-        _refreshReceiptRequest = [[SKReceiptRefreshRequest alloc] initWithReceiptProperties:@{}];
-    }
+    _refreshReceiptRequest = [[SKReceiptRefreshRequest alloc] initWithReceiptProperties:@{}];
     _refreshReceiptRequest.delegate = self;
     [_refreshReceiptRequest start];
 }
@@ -552,7 +543,7 @@ typedef void (^RMStoreSuccessBlock)(void);
     [[NSNotificationCenter defaultCenter] postNotificationName:RMSKRestoreTransactionsFailed object:self userInfo:userInfo];
 }
 
-- (void)paymentQueue:(SKPaymentQueue *)queue updatedDownloads:(NSArray *)downloads API_AVAILABLE(macos(10.8))
+- (void)paymentQueue:(SKPaymentQueue *)queue updatedDownloads:(NSArray *)downloads
 {
     for (SKDownload *download in downloads)
     {
@@ -609,98 +600,80 @@ typedef void (^RMStoreSuccessBlock)(void);
 
 #pragma mark Download State
 
-- (void)didCancelDownload:(SKDownload*)download queue:(SKPaymentQueue*)queue API_AVAILABLE(macos(10.8))
+- (void)didCancelDownload:(SKDownload*)download queue:(SKPaymentQueue*)queue
 {
-    if (@available(macOS 10.11, *))
+    SKPaymentTransaction *transaction = download.transaction;
+    RMStoreLog(@"download %@ for product %@ canceled", download.contentIdentifier, download.transaction.payment.productIdentifier);
+
+    [self postNotificationWithName:RMSKDownloadCanceled download:download userInfoExtras:nil];
+
+    NSError *error = [NSError errorWithDomain:RMStoreErrorDomain code:RMStoreErrorCodeDownloadCanceled userInfo:@{NSLocalizedDescriptionKey: NSLocalizedStringFromTable(@"Download canceled", @"RMStore", @"Error description")}];
+
+    const BOOL hasPendingDownloads = [self.class hasPendingDownloadsInTransaction:transaction];
+    if (!hasPendingDownloads)
     {
-        SKPaymentTransaction *transaction = download.transaction;
-        RMStoreLog(@"download %@ for product %@ canceled", download.contentIdentifier, download.transaction.payment.productIdentifier);
-
-        [self postNotificationWithName:RMSKDownloadCanceled download:download userInfoExtras:nil];
-
-        NSError *error = [NSError errorWithDomain:RMStoreErrorDomain code:RMStoreErrorCodeDownloadCanceled userInfo:@{NSLocalizedDescriptionKey: NSLocalizedStringFromTable(@"Download canceled", @"RMStore", @"Error description")}];
-
-        const BOOL hasPendingDownloads = [self.class hasPendingDownloadsInTransaction:transaction];
-        if (!hasPendingDownloads)
-        {
-            [self didFailTransaction:transaction queue:queue error:error];
-        }
+        [self didFailTransaction:transaction queue:queue error:error];
     }
 }
 
-- (void)didFailDownload:(SKDownload*)download queue:(SKPaymentQueue*)queue API_AVAILABLE(macos(10.8))
+- (void)didFailDownload:(SKDownload*)download queue:(SKPaymentQueue*)queue
 {
     NSError *error = download.error;
-    if (@available(macOS 10.11, *))
+    SKPaymentTransaction *transaction = download.transaction;
+    RMStoreLog(@"download %@ for product %@ failed with error %@", download.contentIdentifier, transaction.payment.productIdentifier, error.debugDescription);
+
+    NSDictionary *extras = error ? @{RMStoreNotificationStoreError : error} : nil;
+    [self postNotificationWithName:RMSKDownloadFailed download:download userInfoExtras:extras];
+
+    const BOOL hasPendingDownloads = [self.class hasPendingDownloadsInTransaction:transaction];
+    if (!hasPendingDownloads)
     {
-        SKPaymentTransaction *transaction = download.transaction;
-        RMStoreLog(@"download %@ for product %@ failed with error %@", download.contentIdentifier, transaction.payment.productIdentifier, error.debugDescription);
-
-        NSDictionary *extras = error ? @{RMStoreNotificationStoreError : error} : nil;
-        [self postNotificationWithName:RMSKDownloadFailed download:download userInfoExtras:extras];
-
-        const BOOL hasPendingDownloads = [self.class hasPendingDownloadsInTransaction:transaction];
-        if (!hasPendingDownloads)
-        {
-            [self didFailTransaction:transaction queue:queue error:error];
-        }
+        [self didFailTransaction:transaction queue:queue error:error];
     }
 }
 
-- (void)didFinishDownload:(SKDownload*)download queue:(SKPaymentQueue*)queue API_AVAILABLE(macos(10.8))
+- (void)didFinishDownload:(SKDownload*)download queue:(SKPaymentQueue*)queue
 {
-    if (@available(macOS 10.11, *))
+    SKPaymentTransaction *transaction = download.transaction;
+    RMStoreLog(@"download %@ for product %@ finished", download.contentIdentifier, transaction.payment.productIdentifier);
+
+    [self postNotificationWithName:RMSKDownloadFinished download:download userInfoExtras:nil];
+
+    const BOOL hasPendingDownloads = [self.class hasPendingDownloadsInTransaction:transaction];
+
+    if (!hasPendingDownloads)
     {
-        SKPaymentTransaction *transaction = download.transaction;
-        RMStoreLog(@"download %@ for product %@ finished", download.contentIdentifier, transaction.payment.productIdentifier);
-
-        [self postNotificationWithName:RMSKDownloadFinished download:download userInfoExtras:nil];
-
-        const BOOL hasPendingDownloads = [self.class hasPendingDownloadsInTransaction:transaction];
-
-        if (!hasPendingDownloads)
-        {
-            [self finishTransaction:download.transaction queue:queue];
-        }
+        [self finishTransaction:download.transaction queue:queue];
     }
 }
 
-- (void)didPauseDownload:(SKDownload*)download queue:(SKPaymentQueue*)queue API_AVAILABLE(macos(10.8))
+- (void)didPauseDownload:(SKDownload*)download queue:(SKPaymentQueue*)queue
 {
-    if (@available(macOS 10.11, *))
-    {
-        RMStoreLog(@"download %@ for product %@ paused", download.contentIdentifier, download.transaction.payment.productIdentifier);
-    }
+    RMStoreLog(@"download %@ for product %@ paused", download.contentIdentifier, download.transaction.payment.productIdentifier);
     [self postNotificationWithName:RMSKDownloadPaused download:download userInfoExtras:nil];
 }
 
-- (void)didUpdateDownload:(SKDownload*)download queue:(SKPaymentQueue*)queue API_AVAILABLE(macos(10.8))
+- (void)didUpdateDownload:(SKDownload*)download queue:(SKPaymentQueue*)queue
 {
-    if (@available(macOS 10.11, *))
-    {
-        RMStoreLog(@"download %@ for product %@ updated", download.contentIdentifier, download.transaction.payment.productIdentifier);
-    }
+    RMStoreLog(@"download %@ for product %@ updated", download.contentIdentifier, download.transaction.payment.productIdentifier);
     NSDictionary *extras = @{RMStoreNotificationDownloadProgress : @(download.progress)};
     [self postNotificationWithName:RMSKDownloadUpdated download:download userInfoExtras:extras];
 }
 
 + (BOOL)hasPendingDownloadsInTransaction:(SKPaymentTransaction*)transaction
 {
-    if (@available(macOS 10.8, *))
+    for (SKDownload *download in transaction.downloads)
     {
-        for (SKDownload *download in transaction.downloads)
+        switch (download.state)
         {
-            switch (download.state)
-            {
-                case SKDownloadStateActive:
-                case SKDownloadStatePaused:
-                case SKDownloadStateWaiting:
-                    return YES;
-                case SKDownloadStateCancelled:
-                case SKDownloadStateFailed:
-                case SKDownloadStateFinished:
-                    continue;
-            }
+            case SKDownloadStateActive:
+            case SKDownloadStatePaused:
+            case SKDownloadStateWaiting:
+                return YES;
+            case SKDownloadStateCancelled:
+            case SKDownloadStateFailed:
+            case SKDownloadStateFinished:
+                continue;
         }
     }
     return NO;
@@ -819,18 +792,15 @@ typedef void (^RMStoreSuccessBlock)(void);
 
 - (void)didDownloadSelfHostedContentForTransaction:(SKPaymentTransaction *)transaction queue:(SKPaymentQueue*)queue
 {
-    if (@available(macOS 10.8, *))
+    NSArray *downloads = [transaction respondsToSelector:@selector(downloads)] ? transaction.downloads : @[];
+    if (downloads.count > 0)
     {
-        NSArray *downloads = [transaction respondsToSelector:@selector(downloads)] ? transaction.downloads : @[];
-        if (downloads.count > 0)
-        {
-            RMStoreLog(@"starting downloads for product %@ started", transaction.payment.productIdentifier);
-            [queue startDownloads:downloads];
-        }
-        else
-        {
-            [self finishTransaction:transaction queue:queue];
-        }
+        RMStoreLog(@"starting downloads for product %@ started", transaction.payment.productIdentifier);
+        [queue startDownloads:downloads];
+    }
+    else
+    {
+        [self finishTransaction:transaction queue:queue];
     }
 }
 
@@ -920,14 +890,11 @@ typedef void (^RMStoreSuccessBlock)(void);
     [_products setObject:product forKey:product.productIdentifier];
 }
 
-- (void)postNotificationWithName:(NSString*)notificationName download:(SKDownload *)download userInfoExtras:(NSDictionary*)extras API_AVAILABLE(macos(10.8))
+- (void)postNotificationWithName:(NSString*)notificationName download:(SKDownload *)download userInfoExtras:(NSDictionary*)extras
 {
     NSMutableDictionary *mutableExtras = extras ? [NSMutableDictionary dictionaryWithDictionary:extras] : [NSMutableDictionary dictionary];
     mutableExtras[RMStoreNotificationStoreDownload] = download;
-    if (@available(macOS 10.11, *))
-    {
-        [self postNotificationWithName:notificationName transaction:download.transaction userInfoExtras:mutableExtras];
-    }
+    [self postNotificationWithName:notificationName transaction:download.transaction userInfoExtras:mutableExtras];
 }
 
 - (void)postNotificationWithName:(NSString*)notificationName transaction:(SKPaymentTransaction*)transaction userInfoExtras:(NSDictionary*)extras

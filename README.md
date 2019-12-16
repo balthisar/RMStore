@@ -17,14 +17,17 @@ external dependencies. Purchasing a product is as simple as:
 ## Important Maintenance Note
 
 The original repository by Hermes Pique ("Robot Media") is no longer being
-maintained. I'm not a CocoaPods user, and so the the CocoaPods instructions
-probably won't work for you. If you'd like to contribute a fix, I'll be happy
-to accept a PR.
+maintained. I'm not a CocoaPods user; if you'd like to contribute a fix, I'll
+be happy to accept a PR.
 
 The intent of this fork is to:
 
+- Update minimum requirements to recent operating system releases in order to
+  remove deprecations.
+- Update to OpenSSL 1.1.1 branch.
 - Add/fix support macOS.
 - Add/fix support for macOS Catalyst.
+- Add/fix support to tvOS, just because I can.
 - Integrate many of the fixes and improvements made by the community.
 - Provide an XCFramework.
 
@@ -35,14 +38,7 @@ instructions may be out of date. As always, though, headers are canon.
 
 ## Installation
 
-Using [CocoaPods](http://cocoapods.org/), which probably doesn't work with
-this fork:
-
-```ruby
-pod 'RMStore', '~> 0.9'
-```
-
-Carthage works. Add the following to your Cartfile:
+Add the following to your Cartfile:
 
 ```ruby
 github "balthisar/RMStore" "branch-of-your-choice"
@@ -375,7 +371,7 @@ use the `acceptStoredStorePayments` method on RMStore.
 
 ## Requirements
 
-RMStore requires iOS 9.0+ or macOS 10.12+ and ARC.
+RMStore requires iOS 12.0+ or macOS 10.13+ (macOS 10.15+ for Catalyst).
 
 
 ## Roadmap

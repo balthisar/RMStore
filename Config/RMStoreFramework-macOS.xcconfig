@@ -14,7 +14,7 @@
 
 PRODUCT_NAME                = RMStoreFramework
 PRODUCT_BUNDLE_IDENTIFIER   = com.balthisar.RMStore-macOS
-INFOPLIST_FILE              = RMStoreFramework/Info.plist
+INFOPLIST_FILE              = RMStoreFramework/RMStoreFramework-Info.plist
 SDKROOT                     = macosx
 DEFINES_MODULE              = YES
 

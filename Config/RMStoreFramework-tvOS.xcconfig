@@ -15,7 +15,7 @@
 PRODUCT_NAME                = RMStoreFramework
 SDKROOT                     = appletvos
 PRODUCT_BUNDLE_IDENTIFIER   = com.balthisar.RMStore-tvOS
-INFOPLIST_FILE              = RMStoreFramework/Info.plist
+INFOPLIST_FILE              = RMStoreFramework/RMStoreFramework-Info.plist
 TARGETED_DEVICE_FAMILY      = 3
 DEFINES_MODULE              = YES
 

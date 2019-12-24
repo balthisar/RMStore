@@ -14,7 +14,7 @@
 
 PRODUCT_NAME                = RMStoreFramework
 PRODUCT_BUNDLE_IDENTIFIER   = com.balthisar.RMStore-iOS
-INFOPLIST_FILE              = RMStoreFramework/Info.plist
+INFOPLIST_FILE              = RMStoreFramework/RMStoreFramework-Info.plist
 SUPPORTS_MACCATALYST        = YES
 DEFINES_MODULE              = YES
 

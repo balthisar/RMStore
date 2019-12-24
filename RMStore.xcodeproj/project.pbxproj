@@ -1152,7 +1152,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "BUILD=\"${BUILT_PRODUCTS_DIR}/RMStore-ContainerFramework.framework/Versions/A/Resources\"\n\n# In the event that you have a a proxy defined here.\nsource \"${HOME}/.zshenv\"\n\n# Build the XCFramework\n./RMStoreFramework/build_xcframework.sh\n\n# Copy it into the fake framework.\ncp -r \"$BUILD_DIR/RMStoreFramework.xcframework\" \"${BUILD}/\"\n";
+			shellScript = "BUILD=\"${BUILT_PRODUCTS_DIR}/RMStore-ContainerFramework.framework/Versions/A/Resources\"\n\n# In the event that you have a a proxy defined here.\nsource \"${HOME}/.zshenv\"\n\n# Build the XCFramework\n./RMStoreFramework/build_xcframework.sh\n\n# Copy it into the fake framework.\ncp -r \"$BUILD/RMStoreFramework.xcframework\" \"${BUILD}/\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

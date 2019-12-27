@@ -1152,7 +1152,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "XCFRAMEWORK=\"$SYMROOT/RMStoreFramework.xcframework\"\nCP_PATH=\"${CONFIGURATION_BUILD_DIR}/RMStore-ContainerFramework.framework/Versions/A/Resources\"\n\necho \"SYMROOT: $SYMROOT\"\necho \"CONFIGURATION_BUILD_DIR: $CONFIGURATION_BUILD_DIR\"\necho \"BUILT_PRODUCTS_DIR: $BUILT_PRODUCTS_DIR\"\necho \"CONFIGURATION_BUILD_DIR: $CONFIGURATION_BUILD_DIR\"\necho \"TARGET_BUILD_DIR: $TARGET_BUILD_DIR\"\necho \"DSTROOT: $DSTROOT\"\necho \"BUILT_PRODUCTS_DIR: $BUILT_PRODUCTS_DIR\"\nexit 1\n\n\n# In the event that you have a a proxy defined here.\nsource \"${HOME}/.zshenv\"\n\n# Build the XCFramework; will end up in XCFRAMEWORK\n./RMStoreFramework/build_xcframework.sh\n\n# Copy it into the fake framework.\nset -x\ncp -r \"${XCFRAMEWORK}\" \"${CP_PATH}/\"\n";
+			shellScript = "XCFRAMEWORK=\"$SYMROOT/RMStoreFramework.xcframework\"\nCP_PATH=\"${CONFIGURATION_BUILD_DIR}/RMStore-ContainerFramework.framework/Versions/A/Resources\"\n\necho \"SYMROOT: $SYMROOT\"\necho \"CONFIGURATION_BUILD_DIR: $CONFIGURATION_BUILD_DIR\"\necho \"BUILT_PRODUCTS_DIR: $BUILT_PRODUCTS_DIR\"\necho \"CONFIGURATION_BUILD_DIR: $CONFIGURATION_BUILD_DIR\"\necho \"TARGET_BUILD_DIR: $TARGET_BUILD_DIR\"\necho \"DSTROOT: $DSTROOT\"\necho \"BUILT_PRODUCTS_DIR: $BUILT_PRODUCTS_DIR\"\n\n# In the event that you have a a proxy defined here.\nsource \"${HOME}/.zshenv\"\n\n# Build the XCFramework; will end up in XCFRAMEWORK\n./RMStoreFramework/build_xcframework.sh\n\n# Copy it into the fake framework.\nset -x\ncp -r \"${XCFRAMEWORK}\" \"${CP_PATH}/\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
